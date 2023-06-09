@@ -3,6 +3,7 @@
 #include <ESPmDNS.h>
 #include <ESPAsyncWebServer.h>
 #include <WS2812FX.h>
+#include <ArduinoJson.h>
 
 // Init Internal LED
 WS2812FX ws2812fx = WS2812FX(1, 18, NEO_GRB + NEO_KHZ800);
@@ -28,6 +29,7 @@ AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
 
 long lastWifiLoopRun = 0;
+long lastWSLoopRun = 0;
 int lastWifiStatus = -1;
 void driveWifi() {
   if (millis() - lastWifiLoopRun >= 200) {
@@ -79,6 +81,23 @@ void driveWifi() {
 
     lastWifiStatus = status;
     lastWifiLoopRun = millis();
+  }
+
+  // WS Alive Ticker
+  if (millis() - lastWSLoopRun >= 500) {
+    String output = "STATUS|CH[";
+
+    for (size_t i = 1; i < sizeof(dmxData); i++)
+    {
+      output += String(dmxData[i]) + ",";
+    }
+
+    output = output.substring(0, output.length()-1);
+    output += "]";
+    
+    ws.textAll(output);
+
+    lastWSLoopRun = millis();
   }
 }
 
