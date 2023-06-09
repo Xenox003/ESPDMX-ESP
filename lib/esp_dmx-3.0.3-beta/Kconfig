@@ -1,0 +1,34 @@
+menu "DMX/RDM Configuration"
+
+    config DMX_ISR_IN_IRAM
+        bool "Place DMX ISR functions in IRAM"
+        default y
+        select GPTIMER_ISR_IRAM_SAFE
+        select GPTIMER_CTRL_FUNC_IN_IRAM
+        help
+            The DMX driver ISR is placed in IRAM to reduce latency. In 
+            particular, printing to the terminal with this option disabled can
+            interfere with the RDM timer causing it to output RDM that is
+            slightly out of specification. ESP-IDF v5 only: enabling this also
+            enables some kconfig options in the GPTimer driver.
+    
+    config RDM_STATIC_DEVICE_DISCOVERY
+        bool "Enable static memory use for RDM device discovery"
+        default n
+        help
+            RDM Device Discovery needs nearly 1KB of memory. Allocating this
+            much memory on the stack can lead to stack overflow crashes.
+            Therefore, the default behavior is for the DMX driver to heap
+            allocate the needed memory. Enabling this option instructs the DMX
+            driver to allocate the needed memory on the stack.
+
+    config RDM_DEBUG_DEVICE_DISCOVERY
+        bool "Enable debugging for RDM device discovery"
+        default n
+        help
+            Enabling this option can help to find bugs within the DMX driver's
+            RDM discovery algorithm, but it can make the discovery process take
+            significantly longer. This options should remain disabled unless
+            changes are being made to the RDM API.
+
+endmenu
